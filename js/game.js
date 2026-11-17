@@ -88,6 +88,15 @@
       blurb: "Leans on the coin until coins fall out.",
     },
     {
+      id: "floof",
+      name: "Floof",
+      tag: "Fluff",
+      cps: 155000,
+      click: 0,
+      baseCost: 12000000000,
+      blurb: "Fluffs the coin until extra doge shakes loose.",
+    },
+    {
       id: "fred",
       name: "Fred",
       tag: "Maple Donut",
