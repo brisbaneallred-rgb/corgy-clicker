@@ -364,7 +364,13 @@ button, input { font: inherit; color: inherit; }
   max-width: 36ch;
 }
 
-.qty-row { display: flex; gap: 6px; }
+.qty-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.sell-toggle[aria-pressed="true"] {
+  background: #8fd6a8;
+  color: var(--ink);
+  border-color: #8fd6a8;
+}
 
 .qty.on {
   background: var(--gold);
@@ -402,6 +408,19 @@ button, input { font: inherit; color: inherit; }
   background:
     linear-gradient(180deg, rgba(240, 193, 75, 0.1), transparent 42%),
     var(--card);
+}
+
+.card.sell-mode.afford {
+  border-color: #6eae86;
+  background:
+    linear-gradient(180deg, rgba(143, 214, 168, 0.16), transparent 46%),
+    var(--card);
+}
+
+.card.sell-mode .cost { color: #d7ffe4; }
+
+.card.sell-mode .meter-fill {
+  background: linear-gradient(90deg, #3d7a52, #d7ffe4);
 }
 
 .card:disabled {
@@ -449,7 +468,8 @@ button, input { font: inherit; color: inherit; }
 
 .name-row {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 2px 8px;
   align-items: baseline;
 }
 
@@ -550,6 +570,8 @@ button, input { font: inherit; color: inherit; }
     overflow: hidden;
   }
   .shop { margin: 0 12px 12px; overflow: auto; }
+  .shop-head { flex-wrap: wrap; }
+  .qty-row { width: 100%; justify-content: flex-start; }
   .stage { justify-content: flex-start; padding: 0 12px 4px; }
   .coin-wrap {
     width: min(230px, 56vw);

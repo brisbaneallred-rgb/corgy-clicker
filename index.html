@@ -50,12 +50,13 @@
         <div class="shop-head">
           <div>
             <h2>Squishmollows</h2>
-            <p>Each one taps the coin. A few also make your own clicks heavier.</p>
+            <p id="shop-note">Each one taps the coin. A few also make your own clicks heavier.</p>
           </div>
-          <div class="qty-row" role="group" aria-label="How many to buy">
+          <div class="qty-row" role="group" aria-label="How many to buy or sell">
             <button type="button" class="qty on" data-qty="1" aria-pressed="true">1</button>
             <button type="button" class="qty" data-qty="10" aria-pressed="false">10</button>
             <button type="button" class="qty" data-qty="max" aria-pressed="false">Max</button>
+            <button type="button" id="sell-mode" class="sell-toggle" aria-pressed="false">Sell</button>
           </div>
         </div>
         <div id="shop-list" class="shop-list"></div>

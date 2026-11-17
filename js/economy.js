@@ -11,6 +11,11 @@
     return (start * (Math.pow(RATE, qty) - 1)) / (RATE - 1);
   }
 
+  function refundOf(baseCost, owned, qty) {
+    if (qty <= 0 || qty > owned) return 0;
+    return costOf(baseCost, owned - qty, qty) * 0.25;
+  }
+
   function maxBuy(baseCost, owned, money) {
     var start = baseCost * Math.pow(RATE, owned);
     if (!(money + 1e-6 >= start)) return 0;
@@ -49,6 +54,7 @@
   root.CorgiEconomy = {
     RATE: RATE,
     costOf: costOf,
+    refundOf: refundOf,
     maxBuy: maxBuy,
     formatAmount: formatAmount,
   };

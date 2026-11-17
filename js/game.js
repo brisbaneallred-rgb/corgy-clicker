@@ -7,58 +7,121 @@
 
   var SQUISH = [
     {
-      id: "biscuit",
-      name: "Biscuit",
-      tag: "Corgi",
+      id: "muffin",
+      name: "Muffin",
+      tag: "Octopus",
       cps: 1,
       click: 0,
       baseCost: 15,
-      blurb: "Boops the coin with a stubby paw.",
+      blurb: "Hugs the coin with too many arms.",
     },
     {
-      id: "mochi",
-      name: "Mochi",
-      tag: "Cat",
+      id: "nevil",
+      name: "Nevil",
+      tag: "Devil",
       cps: 4,
       click: 0,
       baseCost: 100,
-      blurb: "Bats the coin whenever it glints.",
+      blurb: "Pokes the coin in a tiny mischievous way.",
     },
     {
-      id: "bunbun",
-      name: "Bunbun",
-      tag: "Bunny",
+      id: "zeak",
+      name: "Zeak",
+      tag: "Zebra",
       cps: 16,
-      click: 1,
-      baseCost: 1100,
-      blurb: "Thumps the coin, and your clicks land harder.",
-    },
-    {
-      id: "nugget",
-      name: "Nugget",
-      tag: "Chick",
-      cps: 70,
       click: 0,
+      baseCost: 1100,
+      blurb: "Stamps the coin in neat little stripes.",
+    },
+    {
+      id: "floofina",
+      name: "Floofina",
+      tag: "Cheetah",
+      cps: 64,
+      click: 1,
       baseCost: 12000,
-      blurb: "Pecks the coin in a happy little frenzy.",
+      blurb: "Zooms the coin, and your clicks land harder.",
     },
     {
-      id: "bubbles",
-      name: "Bubbles",
-      tag: "Axolotl",
-      cps: 320,
-      click: 5,
+      id: "aqua",
+      name: "Aqua",
+      tag: "Dolfin",
+      cps: 256,
+      click: 0,
       baseCost: 140000,
-      blurb: "Shakes coins loose and sweetens every click.",
+      blurb: "Nose-boops the coin and giggles.",
     },
     {
-      id: "flare",
-      name: "Flare",
-      tag: "Dragon",
-      cps: 1500,
-      click: 25,
+      id: "jeffry",
+      name: "Jeffry",
+      tag: "Pepermint Yeti",
+      cps: 1000,
+      click: 5,
       baseCost: 1600000,
-      blurb: "Taps the coin with both wings.",
+      blurb: "Minty paws sweeten every click.",
+    },
+    {
+      id: "walla",
+      name: "Walla",
+      tag: "Kwalla",
+      cps: 4200,
+      click: 0,
+      baseCost: 20000000,
+      blurb: "Clings to the coin and will not let go.",
+    },
+    {
+      id: "blueyeti",
+      name: "Blue Yeti",
+      tag: "Blue Yeti",
+      cps: 18000,
+      click: 25,
+      baseCost: 260000000,
+      blurb: "Big blue paws make clicks count more.",
+    },
+    {
+      id: "barry",
+      name: "Barry",
+      tag: "Brown Yeti",
+      cps: 75000,
+      click: 0,
+      baseCost: 3400000000,
+      blurb: "Leans on the coin until coins fall out.",
+    },
+    {
+      id: "fred",
+      name: "Fred",
+      tag: "Maple Donut",
+      cps: 320000,
+      click: 100,
+      baseCost: 45000000000,
+      blurb: "Glazes the coin and fattens your clicks.",
+    },
+    {
+      id: "theodo",
+      name: "Theodo",
+      tag: "Blue Monster Dragon",
+      cps: 1400000,
+      click: 0,
+      baseCost: 600000000000,
+      blurb: "Flaps both wings at the coin.",
+    },
+    {
+      id: "fish",
+      name: "Fish",
+      tag: "Red Grey White",
+      cps: 6000000,
+      click: 400,
+      baseCost: 8000000000000,
+      blurb: "Flops the coin and charges every click.",
+    },
+    {
+      id: "filaly",
+      name: "Filaly Doge",
+      tag: "Corgy",
+      cps: 26000000,
+      click: 2000,
+      baseCost: 110000000000000,
+      blurb: "The boss corgy. Every tap is a payday.",
     },
   ];
 
@@ -67,6 +130,7 @@
     owned: {},
     muted: false,
     qty: 1,
+    selling: false,
     hinted: false,
   };
 
@@ -319,6 +383,33 @@
     paint();
   }
 
+  function sellQtyFor(def) {
+    var owned = state.owned[def.id];
+    if (qtyMode() === "max") return owned;
+    return state.qty;
+  }
+
+  function sell(id) {
+    var def = findSquish(id);
+    if (!def) return;
+    var owned = state.owned[def.id];
+    var qty = sellQtyFor(def);
+    var refund = economy.refundOf(def.baseCost, owned, qty);
+    if (qty < 1 || qty > owned) return;
+    state.owned[def.id] = owned - qty;
+    state.doge += refund;
+    playTone(320, 0.12, 0.04);
+    var card = document.querySelector('.card[data-id="' + id + '"]');
+    if (card) {
+      card.classList.remove("bought");
+      void card.offsetWidth;
+      card.classList.add("bought");
+    }
+    buildCrew();
+    scheduleSave();
+    paint();
+  }
+
   function buildShop() {
     var list = $("shop-list");
     list.innerHTML = "";
@@ -328,7 +419,7 @@
       btn.className = "card";
       btn.dataset.id = def.id;
       var rates = "+" + economy.formatAmount(def.cps) + "/s";
-      if (def.click) rates += " · +" + def.click + " per click";
+      if (def.click) rates += " · +" + economy.formatAmount(def.click) + " per click";
       btn.innerHTML =
         '<span class="portrait"><img alt="" width="512" height="512" src="assets/' +
         def.id +
@@ -343,7 +434,8 @@
       btn.querySelector(".rates").textContent = rates;
       btn.querySelector("img").alt = def.name + ", a " + def.tag.toLowerCase() + " squishmollow";
       btn.addEventListener("click", function () {
-        buy(def.id);
+        if (state.selling) sell(def.id);
+        else buy(def.id);
       });
       list.appendChild(btn);
     });
@@ -355,24 +447,48 @@
     SQUISH.forEach(function (def) {
       var card = document.querySelector('.card[data-id="' + def.id + '"]');
       var owned = state.owned[def.id];
-      var qty = qtyFor(def);
-      var showQty = qtyMode() === "max" ? Math.max(qty, 1) : state.qty;
-      var cost = economy.costOf(def.baseCost, owned, showQty);
-      var afford = state.doge + 1e-6 >= cost && (qtyMode() !== "max" || qty >= 1);
-      card.disabled = !afford;
-      card.classList.toggle("afford", afford);
+      card.classList.toggle("sell-mode", state.selling);
       card.querySelector(".count").textContent = economy.formatAmount(owned);
       card.querySelector(".count").classList.toggle("zero", owned === 0);
-      card.querySelector(".cost").textContent = economy.formatAmount(cost);
-      card.querySelector(".mult").textContent =
-        qtyMode() === "max" ? (qty >= 1 ? "×" + economy.formatAmount(qty) : "next") : "×" + state.qty;
-      var next = economy.costOf(def.baseCost, owned, 1);
-      var pct = next <= 0 ? 0 : Math.max(0, Math.min(1, state.doge / next));
-      card.querySelector(".meter-fill").style.width = pct * 100 + "%";
-      card.setAttribute(
-        "aria-label",
-        "Buy " + showQty + " " + def.name + " for " + economy.formatAmount(cost) + " doge. You own " + owned + "."
-      );
+      if (state.selling) {
+        var sellQty = sellQtyFor(def);
+        var canSell = sellQty >= 1 && owned >= sellQty;
+        var refund = canSell ? economy.refundOf(def.baseCost, owned, sellQty) : 0;
+        card.disabled = !canSell;
+        card.classList.toggle("afford", canSell);
+        card.querySelector(".cost").textContent = canSell ? "+" + economy.formatAmount(refund) : "—";
+        card.querySelector(".mult").textContent = "sell ×" + economy.formatAmount(Math.max(sellQty, 0));
+        card.querySelector(".meter-fill").style.width = (canSell ? Math.min(1, sellQty / owned) : 0) * 100 + "%";
+        card.setAttribute(
+          "aria-label",
+          "Sell " +
+            sellQty +
+            " " +
+            def.name +
+            " for " +
+            economy.formatAmount(refund) +
+            " doge back. You own " +
+            owned +
+            "."
+        );
+      } else {
+        var qty = qtyFor(def);
+        var showQty = qtyMode() === "max" ? Math.max(qty, 1) : state.qty;
+        var cost = economy.costOf(def.baseCost, owned, showQty);
+        var afford = state.doge + 1e-6 >= cost && (qtyMode() !== "max" || qty >= 1);
+        card.disabled = !afford;
+        card.classList.toggle("afford", afford);
+        card.querySelector(".cost").textContent = economy.formatAmount(cost);
+        card.querySelector(".mult").textContent =
+          qtyMode() === "max" ? (qty >= 1 ? "×" + economy.formatAmount(qty) : "next") : "×" + state.qty;
+        var next = economy.costOf(def.baseCost, owned, 1);
+        var pct = next <= 0 ? 0 : Math.max(0, Math.min(1, state.doge / next));
+        card.querySelector(".meter-fill").style.width = pct * 100 + "%";
+        card.setAttribute(
+          "aria-label",
+          "Buy " + showQty + " " + def.name + " for " + economy.formatAmount(cost) + " doge. You own " + owned + "."
+        );
+      }
     });
   }
 
@@ -389,6 +505,14 @@
       btn.classList.toggle("on", on);
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
+    var sellBtn = $("sell-mode");
+    sellBtn.textContent = state.selling ? "Buy" : "Sell";
+    sellBtn.setAttribute("aria-pressed", state.selling ? "true" : "false");
+    sellBtn.setAttribute("aria-label", state.selling ? "Switch back to buying" : "Sell squishmollows");
+    $("shop-note").textContent = state.selling
+      ? "Selling gives back a quarter of what those ones cost."
+      : "Each one taps the coin. A few also make your own clicks heavier.";
+    $("shop-list").classList.toggle("is-selling", state.selling);
   }
 
   function paint() {
@@ -405,29 +529,26 @@
       var n = state.owned[def.id];
       if (!n) return;
       any = true;
-      var copies = Math.min(n, 6);
-      for (var i = 0; i < copies; i++) {
-        var fig = document.createElement("figure");
-        fig.className = "pal";
-        fig.dataset.id = def.id;
-        fig.style.setProperty("--bob", (i * 0.17 + SQUISH.indexOf(def) * 0.13).toFixed(2) + "s");
-        var img = document.createElement("img");
-        img.src = "assets/" + def.id + ".png";
-        img.alt = "";
-        img.width = 512;
-        img.height = 512;
-        img.addEventListener("animationend", function (event) {
-          if (event.animationName === "hop") img.classList.remove("tap");
-        });
-        fig.appendChild(img);
-        if (i === copies - 1 && n > copies) {
-          var badge = document.createElement("span");
-          badge.className = "more";
-          badge.textContent = "×" + economy.formatAmount(n);
-          fig.appendChild(badge);
-        }
-        crew.appendChild(fig);
+      var fig = document.createElement("figure");
+      fig.className = "pal";
+      fig.dataset.id = def.id;
+      fig.style.setProperty("--bob", (SQUISH.indexOf(def) * 0.13).toFixed(2) + "s");
+      var img = document.createElement("img");
+      img.src = "assets/" + def.id + ".png";
+      img.alt = "";
+      img.width = 512;
+      img.height = 512;
+      img.addEventListener("animationend", function (event) {
+        if (event.animationName === "hop") img.classList.remove("tap");
+      });
+      fig.appendChild(img);
+      if (n > 1) {
+        var badge = document.createElement("span");
+        badge.className = "more";
+        badge.textContent = "×" + economy.formatAmount(n);
+        fig.appendChild(badge);
       }
+      crew.appendChild(fig);
     });
     empty.hidden = any;
   }
@@ -473,6 +594,11 @@
         scheduleSave();
         paint();
       });
+    });
+
+    $("sell-mode").addEventListener("click", function () {
+      state.selling = !state.selling;
+      paint();
     });
 
     $("mute").addEventListener("click", function () {
