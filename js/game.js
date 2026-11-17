@@ -116,7 +116,7 @@
     },
     {
       id: "filaly",
-      name: "Filaly Doge",
+      name: "Doge",
       tag: "Corgy",
       cps: 26000000,
       click: 2000,
@@ -131,6 +131,7 @@
     muted: false,
     qty: 1,
     selling: false,
+    shopOpen: true,
     hinted: false,
   };
 
@@ -207,6 +208,7 @@
       owned: state.owned,
       muted: state.muted,
       qty: state.qty,
+      shopOpen: state.shopOpen,
       hinted: state.hinted,
       last: Date.now(),
     };
@@ -246,7 +248,8 @@
       });
     }
     state.muted = Boolean(data.muted);
-    if (data.qty === "max" || data.qty === 10 || data.qty === 1) state.qty = data.qty;
+    if (data.qty === "max" || data.qty === 100 || data.qty === 10 || data.qty === 1) state.qty = data.qty;
+    if (typeof data.shopOpen === "boolean") state.shopOpen = data.shopOpen;
     state.hinted = Boolean(data.hinted);
     var away = 0;
     if (typeof data.last === "number") {
@@ -343,6 +346,7 @@
   function clickCoin(clientX, clientY) {
     var gain = clickPower();
     state.doge += gain;
+    dropClickCoins(gain);
     state.hinted = true;
     heard = true;
     $("hint").hidden = true;
@@ -513,6 +517,13 @@
       ? "Selling gives back a quarter of what those ones cost."
       : "Each one taps the coin. A few also make your own clicks heavier.";
     $("shop-list").classList.toggle("is-selling", state.selling);
+    var open = state.shopOpen;
+    $("layout").classList.toggle("shop-closed", !open);
+    $("shop").hidden = !open;
+    var toggle = $("shop-toggle");
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.setAttribute("aria-label", open ? "Close the squishmallow shop" : "Open the squishmallow shop");
+    toggle.textContent = "Shop";
   }
 
   function paint() {
@@ -576,6 +587,7 @@
     lastTs = now;
     var rate = cps();
     if (rate > 0 && dt > 0) state.doge += rate * dt;
+    tickSky(dt, rate);
     paint();
     requestAnimationFrame(frame);
   }
@@ -599,6 +611,19 @@
     $("sell-mode").addEventListener("click", function () {
       state.selling = !state.selling;
       paint();
+    });
+
+    $("shop-toggle").addEventListener("click", function () {
+      state.shopOpen = !state.shopOpen;
+      scheduleSave();
+      paint();
+    });
+
+    $("shop-close").addEventListener("click", function () {
+      state.shopOpen = false;
+      scheduleSave();
+      paint();
+      $("shop-toggle").focus();
     });
 
     $("mute").addEventListener("click", function () {
@@ -626,6 +651,73 @@
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "hidden") save();
     });
+  }
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SKY_CAP = 24;
+  var SKY_PER_SEC = 12;
+  var skyOwed = 0;
+
+  function fallSeconds(rate) {
+    if (rate <= 1) return 5.2;
+    return Math.max(0.75, 5.2 / Math.sqrt(rate));
+  }
+
+  function spawnSkyCoin(duration) {
+    if (reduceMotion || document.visibilityState === "hidden") return false;
+    var sky = $("sky");
+    if (!sky || sky.childElementCount >= SKY_CAP) return false;
+    var coin = document.createElement("img");
+    var size = 26 + Math.random() * 36;
+    var drop = sky.clientHeight;
+    if (drop < 40) drop = window.innerHeight;
+    coin.className = "sky-coin";
+    coin.src = "assets/coin.png";
+    coin.alt = "";
+    coin.draggable = false;
+    coin.width = 128;
+    coin.height = 128;
+    coin.style.width = size + "px";
+    coin.style.left = Math.random() * 94 + "%";
+    coin.style.setProperty("--drop", drop + size + "px");
+    coin.style.setProperty("--drift", Math.round(Math.random() * 100 - 50) + "px");
+    coin.style.setProperty(
+      "--spin",
+      (Math.random() < 0.5 ? -1 : 1) * Math.round(240 + Math.random() * 480) + "deg"
+    );
+    coin.style.animationDuration = duration * (0.88 + Math.random() * 0.24) + "s";
+    coin.addEventListener("animationend", function () {
+      coin.remove();
+    });
+    sky.appendChild(coin);
+    return true;
+  }
+
+  function dropClickCoins(gain) {
+    if (gain <= 0) return;
+    var n = gain < 6 ? Math.max(1, Math.round(gain)) : Math.min(6, 3 + Math.round(Math.log10(gain)));
+    var duration = fallSeconds(Math.max(cps(), n));
+    for (var i = 0; i < n; i++) {
+      if (!spawnSkyCoin(duration)) break;
+    }
+  }
+
+  function tickSky(dt, rate) {
+    if (reduceMotion || document.visibilityState === "hidden" || !(dt > 0)) return;
+    var visualDt = Math.min(dt, 0.1);
+    if (rate > 0) skyOwed += rate * visualDt;
+    var chunk = rate <= SKY_PER_SEC ? 1 : rate / SKY_PER_SEC;
+    var sky = $("sky");
+    if (!sky) return;
+    var room = SKY_CAP - sky.childElementCount;
+    var limit = Math.min(room, Math.max(1, Math.ceil(SKY_PER_SEC * visualDt)));
+    var made = 0;
+    while (skyOwed >= chunk && made < limit) {
+      if (!spawnSkyCoin(fallSeconds(rate))) break;
+      skyOwed -= chunk;
+      made += 1;
+    }
+    if (room <= 0) skyOwed = Math.min(skyOwed, chunk);
   }
 
   function init() {

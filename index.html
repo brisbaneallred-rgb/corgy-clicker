@@ -22,13 +22,15 @@
         <p class="sub"><span id="cps">0</span>/sec · <span id="cpc">1</span>/click · <span id="owned-total">0</span> squishmollows</p>
       </div>
       <div class="tools">
+        <button type="button" id="shop-toggle" aria-expanded="true" aria-controls="shop">Shop</button>
         <button type="button" id="mute" aria-pressed="false">Sound on</button>
         <button type="button" id="reset">Reset</button>
       </div>
     </header>
 
-    <div class="layout">
+    <div class="layout" id="layout">
       <section class="stage" id="stage">
+        <div id="sky" class="sky" aria-hidden="true"></div>
         <div class="felt">
           <div class="coin-wrap" id="coin-wrap">
             <button type="button" id="coin" class="coin-btn" aria-label="Click the corgi coin">
@@ -46,15 +48,19 @@
         </div>
       </section>
 
-      <aside class="shop" aria-label="Squishmollow shop">
+      <aside class="shop" id="shop" aria-label="Squishmollow shop">
         <div class="shop-head">
           <div>
-            <h2>Squishmollows</h2>
+            <div class="shop-title">
+              <h2>Squishmollows</h2>
+              <button type="button" id="shop-close">Close</button>
+            </div>
             <p id="shop-note">Each one taps the coin. A few also make your own clicks heavier.</p>
           </div>
           <div class="qty-row" role="group" aria-label="How many to buy or sell">
             <button type="button" class="qty on" data-qty="1" aria-pressed="true">1</button>
             <button type="button" class="qty" data-qty="10" aria-pressed="false">10</button>
+            <button type="button" class="qty" data-qty="100" aria-pressed="false">100</button>
             <button type="button" class="qty" data-qty="max" aria-pressed="false">Max</button>
             <button type="button" id="sell-mode" class="sell-toggle" aria-pressed="false">Sell</button>
           </div>
