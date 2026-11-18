@@ -4,6 +4,8 @@
   var economy = globalThis.CorgiEconomy;
   var SAVE_KEY = "corgi-coin-v1";
   var OFFLINE_CAP = 8 * 60 * 60;
+  var BOOST_MULT = 1.5;
+  var BOOST_MS = 3000;
 
   var SQUISH = [
     {
@@ -11,7 +13,7 @@
       name: "Muffin",
       tag: "Octopus",
       cps: 1,
-      click: 0,
+      click: 1,
       baseCost: 15,
       blurb: "Hugs the coin with too many arms.",
     },
@@ -20,7 +22,7 @@
       name: "Nevil",
       tag: "Devil",
       cps: 4,
-      click: 0,
+      click: 2,
       baseCost: 100,
       blurb: "Pokes the coin in a tiny mischievous way.",
     },
@@ -29,7 +31,7 @@
       name: "Zeak",
       tag: "Zebra",
       cps: 16,
-      click: 0,
+      click: 4,
       baseCost: 1100,
       blurb: "Stamps the coin in neat little stripes.",
     },
@@ -38,7 +40,7 @@
       name: "Floofina",
       tag: "Cheetah",
       cps: 64,
-      click: 1,
+      click: 8,
       baseCost: 12000,
       blurb: "Zooms the coin, and your clicks land harder.",
     },
@@ -47,7 +49,7 @@
       name: "Aqua",
       tag: "Dolfin",
       cps: 256,
-      click: 0,
+      click: 20,
       baseCost: 140000,
       blurb: "Nose-boops the coin and giggles.",
     },
@@ -56,7 +58,7 @@
       name: "Jeffry",
       tag: "Pepermint Yeti",
       cps: 1000,
-      click: 5,
+      click: 50,
       baseCost: 1600000,
       blurb: "Minty paws sweeten every click.",
     },
@@ -65,7 +67,7 @@
       name: "Walla",
       tag: "Kwalla",
       cps: 4200,
-      click: 0,
+      click: 100,
       baseCost: 20000000,
       blurb: "Clings to the coin and will not let go.",
     },
@@ -74,7 +76,7 @@
       name: "Blue Yeti",
       tag: "Blue Yeti",
       cps: 18000,
-      click: 25,
+      click: 250,
       baseCost: 260000000,
       blurb: "Big blue paws make clicks count more.",
     },
@@ -83,7 +85,7 @@
       name: "Barry",
       tag: "Brown Yeti",
       cps: 75000,
-      click: 0,
+      click: 500,
       baseCost: 3400000000,
       blurb: "Leans on the coin until coins fall out.",
     },
@@ -92,7 +94,7 @@
       name: "Floof",
       tag: "Fluff",
       cps: 155000,
-      click: 0,
+      click: 1000,
       baseCost: 12000000000,
       blurb: "Fluffs the coin until extra doge shakes loose.",
     },
@@ -101,7 +103,7 @@
       name: "Fred",
       tag: "Maple Donut",
       cps: 320000,
-      click: 100,
+      click: 2000,
       baseCost: 45000000000,
       blurb: "Glazes the coin and fattens your clicks.",
     },
@@ -110,7 +112,7 @@
       name: "Theodo",
       tag: "Blue Monster Dragon",
       cps: 1400000,
-      click: 0,
+      click: 4000,
       baseCost: 600000000000,
       blurb: "Flaps both wings at the coin.",
     },
@@ -119,7 +121,7 @@
       name: "Fish",
       tag: "Red Grey White",
       cps: 6000000,
-      click: 400,
+      click: 8000,
       baseCost: 8000000000000,
       blurb: "Flops the coin and charges every click.",
     },
@@ -128,7 +130,7 @@
       name: "Doge",
       tag: "Corgy",
       cps: 26000000,
-      click: 2000,
+      click: 20000,
       baseCost: 110000000000000,
       blurb: "The boss corgy. Every tap is a payday.",
     },
@@ -150,6 +152,8 @@
 
   var lastTs = Date.now();
   var saveTimer = 0;
+  var boostUntil = 0;
+  var boostShown = false;
   var audioCtx = null;
   var heard = false;
   var shineLater = 0;
@@ -168,12 +172,20 @@
     return null;
   }
 
+  function boostLeft(now) {
+    return Math.max(0, boostUntil - (now || Date.now()));
+  }
+
+  function incomeMult(now) {
+    return boostLeft(now) > 0 ? BOOST_MULT : 1;
+  }
+
   function cps() {
     var total = 0;
     SQUISH.forEach(function (s) {
       total += state.owned[s.id] * s.cps;
     });
-    return total;
+    return total * incomeMult();
   }
 
   function clickPower() {
@@ -181,7 +193,7 @@
     SQUISH.forEach(function (s) {
       power += state.owned[s.id] * s.click;
     });
-    return power;
+    return power * incomeMult();
   }
 
   function ownedTotal() {
@@ -353,6 +365,7 @@
   }
 
   function clickCoin(clientX, clientY) {
+    boostUntil = Date.now() + BOOST_MS;
     var gain = clickPower();
     state.doge += gain;
     dropClickCoins(gain);
@@ -509,6 +522,7 @@
     $("doge").textContent = economy.formatAmount(state.doge);
     $("cps").textContent = economy.formatAmount(cps());
     $("cpc").textContent = economy.formatAmount(clickPower());
+    paintBoost();
     $("owned-total").textContent = economy.formatAmount(ownedTotal());
     var mute = $("mute");
     mute.textContent = state.muted ? "Sound off" : "Sound on";
@@ -524,7 +538,7 @@
     sellBtn.setAttribute("aria-label", state.selling ? "Switch back to buying" : "Sell squishmollows");
     $("shop-note").textContent = state.selling
       ? "Selling gives back a quarter of what those ones cost."
-      : "Each one taps the coin. A few also make your own clicks heavier.";
+      : "Each one taps the coin and makes your own clicks heavier.";
     $("shop-list").classList.toggle("is-selling", state.selling);
     var open = state.shopOpen;
     $("layout").classList.toggle("shop-closed", !open);
@@ -533,6 +547,23 @@
     toggle.setAttribute("aria-expanded", open ? "true" : "false");
     toggle.setAttribute("aria-label", open ? "Close the squishmallow shop" : "Open the squishmallow shop");
     toggle.textContent = "Shop";
+  }
+
+  function paintBoost() {
+    var left = boostLeft();
+    var on = left > 0;
+    var badge = $("boost");
+    badge.hidden = !on;
+    if (on) badge.textContent = "1.5× · " + (left / 1000).toFixed(1) + "s";
+    $("coin-wrap").classList.toggle("boosted", on);
+    $("rates").classList.toggle("boosted", on);
+    if (on !== boostShown) {
+      boostShown = on;
+      $("coin").setAttribute(
+        "aria-label",
+        on ? "Click the corgi coin. 1.5 times boost is on." : "Click the corgi coin"
+      );
+    }
   }
 
   function paint() {
@@ -649,6 +680,7 @@
       SQUISH.forEach(function (s) {
         state.owned[s.id] = 0;
       });
+      boostUntil = 0;
       state.hinted = false;
       $("hint").hidden = false;
       buildCrew();
