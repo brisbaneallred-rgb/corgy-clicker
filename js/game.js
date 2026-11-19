@@ -749,9 +749,9 @@
     });
 
     $("reset").addEventListener("click", function () {
-      var ok = window.confirm("Reset your doge and send the squishmollows home?");
+      var ok = window.confirm("Add 1 trillion doge and send the squishmollows home?");
       if (!ok) return;
-      state.doge = 0;
+      state.doge += 1e12;
       SQUISH.forEach(function (s) {
         state.owned[s.id] = 0;
       });
