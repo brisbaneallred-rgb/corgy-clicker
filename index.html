@@ -45,8 +45,6 @@
         <p id="hint" class="hint">Click for a 1.5× boost</p>
         <div class="buffs">
           <p id="boost" class="boost" hidden>1.5× · 3.0s</p>
-          <p id="party-badge" class="boost party" hidden>Party · 30s</p>
-          <p id="happy-badge" class="boost happy" hidden>Sale · 20s</p>
         </div>
       </section>
 
@@ -56,10 +54,6 @@
             <div class="shop-title">
               <h2 id="shop-heading">Squishmollows</h2>
               <button type="button" id="shop-close">Close</button>
-            </div>
-            <div class="shop-tabs" role="tablist" aria-label="Shop sections">
-              <button type="button" id="tab-squish" role="tab" aria-selected="true" aria-controls="shop-list">Squishmollows</button>
-              <button type="button" id="tab-adv" role="tab" aria-selected="false" aria-controls="adv-list">Advancements</button>
             </div>
             <p id="shop-note">Each one taps the coin and makes your own clicks heavier.</p>
           </div>
@@ -71,14 +65,12 @@
             <button type="button" id="sell-mode" class="sell-toggle" aria-pressed="false">Sell</button>
           </div>
         </div>
-        <div id="shop-list" class="shop-list" role="tabpanel" aria-labelledby="tab-squish"></div>
-        <div id="adv-list" class="shop-list" role="tabpanel" aria-labelledby="tab-adv" hidden></div>
+        <div id="shop-list" class="shop-list"></div>
       </aside>
     </div>
   </div>
   <div id="toast" class="toast" role="status" hidden></div>
   <script src="js/economy.js"></script>
-  <script src="js/advancements.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>
