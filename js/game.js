@@ -281,10 +281,19 @@
       codeMessage("That code does not work.");
       return;
     }
-    state.doge += 1;
+    var id = "filaly";
+    state.owned[id] += 1;
+    playTone(520, 0.12, 0.04);
+    var card = document.querySelector('#shop-list .card[data-id="' + id + '"]');
+    if (card) {
+      card.classList.remove("bought");
+      void card.offsetWidth;
+      card.classList.add("bought");
+    }
     $("code-input").value = "";
-    codeMessage("You got 1 doge.");
-    toast("You got 1 doge.");
+    codeMessage("You got a Doge.");
+    toast("You got a Doge.");
+    buildCrew();
     save();
     paint();
   }
