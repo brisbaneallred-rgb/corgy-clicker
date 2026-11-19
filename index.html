@@ -53,7 +53,10 @@
           <div class="shop-copy">
             <div class="shop-title">
               <h2 id="shop-heading">Squishmollows</h2>
-              <button type="button" id="shop-close">Close</button>
+              <div class="shop-actions">
+                <button type="button" id="code-open" aria-expanded="false" aria-controls="code-panel">Code</button>
+                <button type="button" id="shop-close">Close</button>
+              </div>
             </div>
             <p id="shop-note">Each one taps the coin and makes your own clicks heavier.</p>
           </div>
@@ -67,6 +70,20 @@
         </div>
         <div id="shop-list" class="shop-list"></div>
       </aside>
+      <div id="code-panel" class="code-panel" hidden>
+        <div class="code-card" role="dialog" aria-modal="true" aria-labelledby="code-heading">
+          <div class="code-title">
+            <h3 id="code-heading">Code</h3>
+            <button type="button" id="code-close">Close</button>
+          </div>
+          <form id="code-form">
+            <label for="code-input">Enter a code</label>
+            <input id="code-input" type="text" autocomplete="off" spellcheck="false" enterkeyhint="done">
+            <button type="submit">Redeem</button>
+            <p id="code-msg" class="code-msg" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
   <div id="toast" class="toast" role="status" hidden></div>

@@ -152,7 +152,9 @@ button, input { font: inherit; color: inherit; }
 
 .tools button:hover,
 .qty:hover,
-.shop-close:hover { border-color: var(--gold); }
+.shop-close:hover,
+#code-open:hover,
+#code-close:hover { border-color: var(--gold); }
 
 #shop-toggle[aria-expanded="true"] {
   background: var(--gold);
@@ -448,7 +450,15 @@ button, input { font: inherit; color: inherit; }
   font-weight: 700;
 }
 
-.shop-close {
+.shop-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.shop-close,
+#code-open,
+#code-close {
   background: transparent;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -654,6 +664,85 @@ button, input { font: inherit; color: inherit; }
 .toast.show {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+.code-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 6, 3, 0.62);
+}
+
+.code-panel[hidden] { display: none !important; }
+
+.code-card {
+  width: min(360px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
+.code-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.code-title h3 {
+  margin: 0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+#code-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#code-form label {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+#code-input {
+  background: #120c08;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+
+#code-input:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+#code-form button[type="submit"] {
+  background: var(--gold);
+  color: var(--ink);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.code-msg {
+  min-height: 1.2em;
+  margin: 0;
+  font-weight: 800;
+  color: var(--gold-2);
 }
 
 @media (max-width: 860px) {

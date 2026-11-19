@@ -256,6 +256,39 @@
     saveTimer = window.setTimeout(save, 400);
   }
 
+  var CODE_PHRASE = "i love doges";
+
+  function codeMessage(text) {
+    $("code-msg").textContent = text;
+  }
+
+  function openCodePanel() {
+    var panel = $("code-panel");
+    panel.hidden = false;
+    $("code-open").setAttribute("aria-expanded", "true");
+    codeMessage("");
+    $("code-input").focus();
+  }
+
+  function closeCodePanel() {
+    $("code-panel").hidden = true;
+    $("code-open").setAttribute("aria-expanded", "false");
+  }
+
+  function redeemCode() {
+    var typed = $("code-input").value.trim().toLowerCase().replace(/\s+/g, " ");
+    if (typed !== CODE_PHRASE) {
+      codeMessage("That code does not work.");
+      return;
+    }
+    state.doge += 1;
+    $("code-input").value = "";
+    codeMessage("You got 1 doge.");
+    toast("You got 1 doge.");
+    save();
+    paint();
+  }
+
   function toast(message) {
     var node = $("toast");
     node.textContent = message;
@@ -730,15 +763,42 @@
 
     $("shop-toggle").addEventListener("click", function () {
       state.shopOpen = !state.shopOpen;
+      if (!state.shopOpen) closeCodePanel();
       scheduleSave();
       paint();
     });
 
     $("shop-close").addEventListener("click", function () {
       state.shopOpen = false;
+      closeCodePanel();
       scheduleSave();
       paint();
       $("shop-toggle").focus();
+    });
+
+    $("code-open").addEventListener("click", function () {
+      if ($("code-panel").hidden) openCodePanel();
+      else closeCodePanel();
+    });
+
+    $("code-close").addEventListener("click", function () {
+      closeCodePanel();
+      $("code-open").focus();
+    });
+
+    $("code-panel").addEventListener("click", function (event) {
+      if (event.target === $("code-panel")) closeCodePanel();
+    });
+
+    $("code-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+      redeemCode();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape" || $("code-panel").hidden) return;
+      closeCodePanel();
+      $("code-open").focus();
     });
 
     $("mute").addEventListener("click", function () {
